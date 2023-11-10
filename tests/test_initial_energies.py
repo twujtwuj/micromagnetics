@@ -15,6 +15,7 @@ Tests are run on a small (5, 5, 5) system with random magnetic parameters of rea
 
 """
 
+
 def random_unitvec():
     """
     Generates a vector randomly and uniformly on the unit sphere.
@@ -27,7 +28,7 @@ def random_unitvec():
     return vec
 
 
-Lx, Ly, Lz = 50e-9, 50e-9, 50e-9 
+Lx, Ly, Lz = 50e-9, 50e-9, 50e-9
 Nx, Ny, Nz = 5, 5, 5
 dV = (Lx / Nx) * (Ly / Ny) * (Lz / Nz)
 
@@ -47,9 +48,7 @@ mmc_mesh = mmc.Mesh((Lx, Ly, Lz), (Nx, Ny, Nz))
 
 # System properties
 
-mmc_system = mmc.System(
-    Ms, T, mmc_mesh, mag_status=0, is_atomistic=False
-)
+mmc_system = mmc.System(Ms, T, mmc_mesh, mag_status=0, is_atomistic=False)
 
 # Add interactions to the system
 mmc_system.add_zeeman(H)
@@ -64,7 +63,9 @@ uber_system = mm.System(name="system_test_init")
 # System size and mesh
 uber_region = df.Region(p1=(0, 0, 0), p2=(Lx, Ly, Lz))
 uber_mesh = df.Mesh(region=uber_region, n=(Nx, Ny, Nz))
-uber_system.m = df.Field(uber_mesh, dim=3, value=mmc_system.mag, norm=Ms)  # Initialise magnetisations as the same as other system
+uber_system.m = df.Field(
+    uber_mesh, dim=3, value=mmc_system.mag, norm=Ms
+)  # Initialise magnetisations as the same as other system
 uber_system.T = T
 
 # Energy parameters
@@ -91,13 +92,15 @@ def test_zeeman_init():
     """
     Test Zeeman energy density and total energy of our system against Ubermag.
     """
-    
+
     # Initialisation in simulation
     mmc_zeeman_w = mmc_system.zeeman.zeeman
     mmc_zeeman_E = mmc_zeeman_w.sum() * dV
 
     # Initialisation in Ubermag
-    uber_zeeman_w = oc.compute(uber_system.energy.zeeman.density, uber_system).array.squeeze()
+    uber_zeeman_w = oc.compute(
+        uber_system.energy.zeeman.density, uber_system
+    ).array.squeeze()
     uber_zeeman_E = oc.compute(uber_system.energy.zeeman.energy, uber_system)
 
     assert np.allclose(mmc_zeeman_w, uber_zeeman_w, rtol=rtol_test)
@@ -108,7 +111,7 @@ def test_ua_init():
     """
     Test UA energy density and total energy of our system against Ubermag.
     """
-    
+
     print(u, K)
 
     # Initialisation in simulation
@@ -116,7 +119,9 @@ def test_ua_init():
     mmc_ua_E = mmc_ua_w.sum() * dV
 
     # Initialisation in Ubermag
-    uber_ua_w = oc.compute(uber_system.energy.uniaxialanisotropy.density, uber_system).array.squeeze()
+    uber_ua_w = oc.compute(
+        uber_system.energy.uniaxialanisotropy.density, uber_system
+    ).array.squeeze()
     uber_ua_E = oc.compute(uber_system.energy.uniaxialanisotropy.energy, uber_system)
 
     assert np.allclose(mmc_ua_w, uber_ua_w, rtol=rtol_test)
@@ -149,7 +154,7 @@ def test_exchange_init():
         uber_system.energy.exchange.density, uber_system
     ).array.squeeze()
     uber_exchange_E = oc.compute(uber_system.energy.exchange.energy, uber_system)
-    
+
     print(mmc_exchange_E, uber_exchange_E)
 
     assert np.allclose(mmc_exchange_w, uber_exchange_w, rtol=rtol_test)
@@ -182,13 +187,13 @@ def test_exchange_init():
 #         uber_system.energy.exchange.density, uber_system
 #     ).array.squeeze()
 #     uber_exchange_E = oc.compute(uber_system.energy.exchange.energy, uber_system)
-    
+
 #     print(mmc_exchange_E, uber_exchange_E)
 
 #     assert np.allclose(mmc_exchange_w, uber_exchange_w, rtol=rtol_test)
 #     assert np.isclose(mmc_exchange_E, uber_exchange_E, rtol=rtol_test)
-    
-    
+
+
 def test_dmi_init():
     """
     Test DMI energy densities and total energy of our system against Ubermag.
@@ -209,9 +214,7 @@ def test_dmi_init():
     mmc_dmi_E = mmc_dmi_w.sum() * dV
 
     # Initialization in Ubermag
-    uber_dmi_w = oc.compute(
-        uber_system.energy.dmi.density, uber_system
-    ).array.squeeze()
+    uber_dmi_w = oc.compute(uber_system.energy.dmi.density, uber_system).array.squeeze()
     uber_dmi_E = oc.compute(uber_system.energy.dmi.energy, uber_system)
 
     assert np.allclose(mmc_dmi_w, uber_dmi_w, rtol=rtol_test)

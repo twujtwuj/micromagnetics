@@ -95,9 +95,11 @@ class UA:
         # E_a = - K (u \cdot \mu)^2
         # K is equivalent in both cases
         self.ua = -self.K * np.sum(self.u * system.mag, axis=-1) ** 2
-        if K > 0:  
-            self.ua = K + self.ua  # Ubermag uses a difference reference level for positive K
-            
+        if K > 0:
+            self.ua = (
+                K + self.ua
+            )  # Ubermag uses a difference reference level for positive K
+
 
 class Exchange:
     """
@@ -123,7 +125,9 @@ class Exchange:
             self.exchange_x = (self.exchange_x) / (system.mesh.dx**2)
             self.exchange_y = (self.exchange_y) / (system.mesh.dy**2)
             self.exchange_z = (self.exchange_z) / (system.mesh.dz**2)
-            self.exchange_x[1:-1, :, :] += A / (system.mesh.dx**2)  # Change of reference for Ubermag 
+            self.exchange_x[1:-1, :, :] += A / (
+                system.mesh.dx**2
+            )  # Change of reference for Ubermag
             self.exchange_y[:, 1:-1, :] += A / (system.mesh.dy**2)
             self.exchange_z[:, :, 1:-1] += A / (system.mesh.dz**2)
 
@@ -524,7 +528,7 @@ class Simulation:
             if not self.system.is_atomistic:  # Rescaling if continuous interpretation
                 proposed_zeeman_E = proposed_zeeman_E * Ms
                 proposed_ua_E = proposed_ua_E  # No change
-                proposed_exchange_right_E = ( # Rescale and add reference level to non-edge cells
+                proposed_exchange_right_E = (  # Rescale and add reference level to non-edge cells
                     (proposed_exchange_right_E + A) / (dx**2) if x + 1 < Nx else 0
                 )  # right
                 proposed_exchange_left_E = (
