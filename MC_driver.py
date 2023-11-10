@@ -9,8 +9,35 @@ mu0 = 4 * np.pi * 1e-7
 
 class Mesh:
     """
-    A class to encompass the physical dimensions of the (cuboid) domain.
-    This is similar to the df.Mesh and df.Region classes from Ubermag.
+    A class representing the physical dimensions of a cuboid domain.
+
+    Parameters:
+    -----------
+    L : tuple, optional
+        Physical lengths (Lx, Ly, Lz) of the domain in meters. Default is (100e-9, 100e-9, 100e-9).
+
+    N : tuple, optional
+        Number of cells (Nx, Ny, Nz) in the domain. Default is (10, 10, 10).
+
+    Attributes:
+    -----------
+    Lx, Ly, Lz : float
+        Length of the domain in the x, y, z-directions respectively.
+
+    L : tuple
+        Tuple (Lx, Ly, Lz).
+
+    Nx, Ny, Nz : int
+        Number of cells in the x, y, z-directions respectively.
+
+    N : tuple
+        Tuple (Nx, Ny, Nz).
+
+    dx, dy, dz : float
+        Spacing between cells in the x, y, z-directions respectively.
+
+    d : tuple
+        Tuple (dx, dy, dz).
     """
 
     def __init__(self, L=(100e-9, 100e-9, 100e-9), N=(10, 10, 10)):
@@ -131,7 +158,57 @@ class DMI:
 class System:
     """
     Holds the system parameters, the magnetisations, and some plotting functionalities.
-    Eventually this would be replaced by the mm.System class.
+    Eventually, this will be replaced by the mm.System class from Ubermag.
+
+    Parameters:
+    -----------
+    Ms : float
+        Magnetic saturation (magnetic moment per unit volume) of the material.
+
+    T : float
+        Temperature of the system in Kelvin.
+
+    mesh : Mesh object
+        An object defining the spatial discretisation of the system.
+
+    mag_status : int, optional
+        Specifies the initialization of magnetisations. Default is 0.
+        - 0: Random initialisation.
+        - 1: Uniform positive x-direction initialisation.
+        - 2: Uniform positive y-direction initialisation.
+        - 3: Uniform positive z-direction initialisation.
+
+    is_atomistic : bool, optional
+        Indicates whether the magnetic constants are interpreted atomistically or continuously. Default is False.
+
+    Attributes:
+    -----------
+    mesh : Mesh object
+        An object defining the spatial discretisation of the system.
+
+    is_atomistic : bool
+        Indicates interpretation of magnetic constants.
+
+    T : float
+        Temperature of the system in Kelvin.
+
+    Ms : float
+        Magnetic saturation (magnetic moment per unit volume) of the material.
+
+    mag : numpy.ndarray
+        Array representing the magnetisation distribution in the system.
+
+    is_zeeman : bool
+        Indicates whether Zeeman energy is present
+
+    is_ua : bool
+        Indicates whether uniaxial anisotropy energy is present.
+
+    is_exchange : bool
+        Indicates whether exchange energy is present.
+
+    is_dmi : bool
+        Indicates whether Dzyaloshinskii-Moriya interaction is present.
     """
 
     def __init__(self, Ms, T, mesh, mag_status=0, is_atomistic=False):
@@ -146,16 +223,16 @@ class System:
         # Magnetic saturation
         self.Ms = Ms
 
-        # Initial magnetisations
+        # Initial magnetizations
         if mag_status == 0:
             self.mag = self.random_init()
-        if mag_status == 1:
+        elif mag_status == 1:
             self.mag = np.zeros((mesh.Nx, mesh.Ny, mesh.Nz, 3))
             self.mag[:, :, :, 0] = 1
-        if mag_status == 2:
+        elif mag_status == 2:
             self.mag = np.zeros((mesh.Nx, mesh.Ny, mesh.Nz, 3))
             self.mag[:, :, :, 1] = 1
-        if mag_status == 3:
+        elif mag_status == 3:
             self.mag = np.zeros((mesh.Nx, mesh.Ny, mesh.Nz, 3))
             self.mag[:, :, :, 2] = 1
 
@@ -251,7 +328,7 @@ class System:
                 H_y,
                 H_z,
                 color="b",
-                length=length / 2,
+                length=2 * length,
                 normalize=True,
                 pivot="tail",
                 label="H",
@@ -267,7 +344,7 @@ class System:
                 u_y,
                 u_z,
                 color="r",
-                length=length / 2,
+                length=2 * length,
                 normalize=True,
                 pivot="tail",
                 label="u",
@@ -288,20 +365,18 @@ class System:
 class Simulation:
     def __init__(self, system):
         self.system = system
-        self.it_max = it_max
-        self.total_E_tracker = None
+        self.it = 0
+        self.total_E_tracker = []
         self.total_E = None
-        self.run_time = None
+        self.run_time = 0
 
     # Monte-Carlo, non-parallelised, driver
     # (purely numpy implementation with no checkerboard)
-    def run_MMC(self, it_max, alpha=0.5, verbose=True):
+    def run_MMC(self, its, alpha=0.5, verbose=True):
         start = time.time()
-        self.it_max = it_max
 
         # Simulation variables
-        it = 0
-        total_E_tracker = []  # fill with total energy
+        it_fin = int(self.it + its)
 
         # Extract parameters
         T = self.system.T
@@ -330,7 +405,7 @@ class Simulation:
         total_E += 2 * self.system.dmi.dmi_z.sum()
 
         # Main simulation loop
-        while it < it_max:
+        while self.it < it_fin:
             # Uniformly generate proposal
             x = np.random.randint(Nx)
             y = np.random.randint(Ny)
@@ -497,53 +572,56 @@ class Simulation:
                 self.system.dmi.dmi_z[x, y, z] = proposed_dmi_back_E
                 total_E += delta_E  # update total energy
 
-            # Track energy changes and acceptence rate
-            total_E_tracker.append(total_E)
+            # Track energy changes
+            self.total_E_tracker.append(total_E)
 
-            if (it + 1) % (it_max // 10) == 0:
+            if (self.it + 1) % (its // 10) == 0:
                 if verbose:
-                    print(f"Iteration {it + 1}/{it_max} complete")
-            it += 1  # increment time
+                    print(f"Iteration {self.it + 1}/{it_fin} complete")
+            self.it += 1  # increment time
 
         end = time.time()
         if verbose:
             print(f"Time elapsed for MC: {end - start}s")
             print("Simulation complete")
 
-        self.total_E_tracker = total_E_tracker
         self.total_E = total_E
-        self.run_time = end - start
+        self.run_time += end - start
 
     def plot_energy_tracker(self):
-        if self.it_max > 1000:
+        if self.it > 1000:
             plt.plot(
-                self.total_E_tracker[:: self.it_max // 100],
-                np.arange(1, self.it_max, self.it_max // 100),
+                np.arange(1, self.it, self.it // 100),
+                self.total_E_tracker[:: self.it // 100],
             )
         else:
             plt.plot(self.total_E_tracker)
+        plt.title(f"Total energy of system at $i={self.it}$")
+        plt.xlabel("Iteration $i$")
+        plt.ylabel("Total enery $E$")
+
         plt.show()
 
 
-if __name__ == "__main__":
-    Lx, Ly, Lz = 40e-9, 40e-9, 5e-9  # sample size
-    Nx, Ny, Nz = 20, 20, 3
-    # Lx, Ly, Lz = 10e-9, 10e-9, 10e-9  # sample size
-    # Nx, Ny, Nz = 1, 10, 1
-    mesh = Mesh((Lx, Ly, Lz), (Nx, Ny, Nz))
-    Ms = 384e3
-    T = 0
-    system = System(
-        Ms, T, mesh, mag_status=0, is_atomistic=False
-    )  # Random initialisation, continnuous interpretation of constants
-    system.add_zeeman((0, 0, 3e5))
-    system.add_ua(0, (0, 0, 0))
-    system.add_exchange(8.78e-12)
-    system.add_dmi(1.58e-3)
+# if __name__ == "__main__":
+#     Lx, Ly, Lz = 40e-9, 40e-9, 5e-9  # sample size
+#     Nx, Ny, Nz = 20, 20, 3
+#     # Lx, Ly, Lz = 10e-9, 10e-9, 10e-9  # sample size
+#     # Nx, Ny, Nz = 1, 10, 1
+#     mesh = Mesh((Lx, Ly, Lz), (Nx, Ny, Nz))
+#     Ms = 384e3
+#     T = 0
+#     system = System(
+#         Ms, T, mesh, mag_status=0, is_atomistic=False
+#     )  # Random initialisation, continnuous interpretation of constants
+#     system.add_zeeman((0, 0, 3e5))
+#     system.add_ua(0, (0, 0, 0))
+#     system.add_exchange(8.78e-12)
+#     system.add_dmi(1.58e-3)
 
-    it_max = 1000
-    simulation = Simulation(system)
-    simulation.system.plot_quiver()
-    simulation.run_MMC(it_max)
-    simulation.system.plot_quiver()
-    simulation.plot_energy_tracker()
+#     it_max = 1000
+#     simulation = Simulation(system)
+#     simulation.system.plot_quiver()
+#     simulation.run_MMC(it_max)
+#     simulation.system.plot_quiver()
+#     simulation.plot_energy_tracker()
