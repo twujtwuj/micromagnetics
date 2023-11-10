@@ -95,7 +95,9 @@ class UA:
         # E_a = - K (u \cdot \mu)^2
         # K is equivalent in both cases
         self.ua = -self.K * np.sum(self.u * system.mag, axis=-1) ** 2
-
+        if K > 0:  
+            self.ua = K + self.ua  # Ubermag uses a difference reference level for positive K
+            
 
 class Exchange:
     """
@@ -118,9 +120,12 @@ class Exchange:
             system.mag[:, :, 1:] * system.mag[:, :, :-1], axis=-1
         )
         if not system.is_atomistic:  # Rescale for continuous interpretation
-            self.exchange_x = self.exchange_x / (system.mesh.dx**2)
-            self.exchange_y = self.exchange_y / (system.mesh.dy**2)
-            self.exchange_z = self.exchange_z / (system.mesh.dz**2)
+            self.exchange_x = (self.exchange_x) / (system.mesh.dx**2)
+            self.exchange_y = (self.exchange_y) / (system.mesh.dy**2)
+            self.exchange_z = (self.exchange_z) / (system.mesh.dz**2)
+            self.exchange_x[1:-1, :, :] += A / (system.mesh.dx**2)  # Change of reference for Ubermag 
+            self.exchange_y[:, 1:-1, :] += A / (system.mesh.dy**2)
+            self.exchange_z[:, :, 1:-1] += A / (system.mesh.dz**2)
 
 
 class DMI:
@@ -466,6 +471,8 @@ class Simulation:
             # Calculate proposal energy
             proposed_zeeman_E = -mu0 * np.sum(H * proposal, axis=-1)  # Zeeman
             proposed_ua_E = -K * np.sum(u * proposal, axis=-1) ** 2  # anisotropy
+            if K > 0:
+                proposed_ua_E = K + proposed_ua_E  # anisotropy
             proposed_exchange_right_E = (
                 -A * np.sum(proposal * mag[x + 1, y, z], axis=-1) if x + 1 < Nx else 0
             )  # right
@@ -517,12 +524,24 @@ class Simulation:
             if not self.system.is_atomistic:  # Rescaling if continuous interpretation
                 proposed_zeeman_E = proposed_zeeman_E * Ms
                 proposed_ua_E = proposed_ua_E  # No change
-                proposed_exchange_right_E = proposed_exchange_right_E / (dx**2)
-                proposed_exchange_left_E = proposed_exchange_left_E / (dx**2)
-                proposed_exchange_up_E = proposed_exchange_up_E / (dy**2)
-                proposed_exchange_down_E = proposed_exchange_down_E / (dy**2)
-                proposed_exchange_front_E = proposed_exchange_front_E / (dz**2)
-                proposed_exchange_back_E = proposed_exchange_back_E / (dz**2)
+                proposed_exchange_right_E = ( # Rescale and add reference level to non-edge cells
+                    (proposed_exchange_right_E + A) / (dx**2) if x + 1 < Nx else 0
+                )  # right
+                proposed_exchange_left_E = (
+                    (proposed_exchange_left_E + A) / (dx**2) if x > 0 else 0
+                )  # left
+                proposed_exchange_up_E = (
+                    (proposed_exchange_up_E + A) / (dy**2) if y + 1 < Ny else 0
+                )  # up
+                proposed_exchange_down_E = (
+                    (proposed_exchange_down_E + A) / (dy**2) if y > 0 else 0
+                )  # down
+                proposed_exchange_front_E = (
+                    (proposed_exchange_front_E + A) / (dz**2) if z + 1 < Nz else 0
+                )  # front
+                proposed_exchange_back_E = (
+                    (proposed_exchange_back_E + A) / (dz**2) if z > 0 else 0
+                )  # back
                 proposed_dmi_right_E = proposed_dmi_right_E / (2 * dx)
                 proposed_dmi_left_E = proposed_dmi_left_E / (2 * dx)
                 proposed_dmi_up_E = proposed_dmi_up_E / (2 * dy)
@@ -582,7 +601,7 @@ class Simulation:
 
         end = time.time()
         if verbose:
-            print(f"Time elapsed for MC: {end - start}s")
+            print(f"Time elapsed for MMC: {end - start}s")
             print("Simulation complete")
 
         self.total_E = total_E
