@@ -20,7 +20,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r micromagnetics/requirements.txt
+        pip install -r requirements.txt
 
     - name: Run pytest
-      run: pytest micromagnetics/tests/test_initial_energies.py
+      run: pytest tests/test_initial_energies.py
