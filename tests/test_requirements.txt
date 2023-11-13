@@ -1,2 +1,6 @@
+micromagneticmodel
+discretisedfield
+oommfc
 ubermag
 numpy
+matplotlib
