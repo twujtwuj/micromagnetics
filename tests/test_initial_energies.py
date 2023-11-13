@@ -8,7 +8,7 @@ import MMCMag.MMC_driver as mmc
 
 # Use Docker image
 # If Ubermag cannot be installed fully, install mm, df, and oc and use this Docker image:
-docker_runner = oc.oommf.DockerOOMMFRunner(image="ubermag/oommf")
+# docker_runner = oc.oommf.DockerOOMMFRunner(image="ubermag/oommf")
 
 """
 Unit Tests for run_simulation output
