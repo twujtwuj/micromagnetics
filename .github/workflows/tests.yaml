@@ -24,5 +24,8 @@ jobs:
         pip install -r tests/test_requirements.txt
         pip install -e .
 
+    - name: Install Ubermag using conda
+      run: conda install -c conda-forge ubermag
+
     - name: Run pytest
       run: pytest tests/test_initial_energies.py
