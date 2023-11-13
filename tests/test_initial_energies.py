@@ -64,7 +64,7 @@ uber_system = mm.System(name="system_test_init")
 uber_region = df.Region(p1=(0, 0, 0), p2=(Lx, Ly, Lz))
 uber_mesh = df.Mesh(region=uber_region, n=(Nx, Ny, Nz))
 uber_system.m = df.Field(
-    uber_mesh, nvdim=3, value=mmc_system.mag, norm=Ms
+    uber_mesh, 3, value=mmc_system.mag, norm=Ms
 )  # Initialise magnetisations as the same as other system
 uber_system.T = T
 
