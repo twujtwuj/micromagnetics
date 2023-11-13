@@ -1,3 +1,2 @@
 ubermag
 numpy
-matplotlib
