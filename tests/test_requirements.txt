@@ -1,0 +1,3 @@
+ubermag
+numpy
+matplotlib
