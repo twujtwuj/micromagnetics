@@ -24,6 +24,9 @@ jobs:
         pip install -r tests/test_requirements.txt
         pip install -e .
 
+    - name: Install OOMMF using conda
+      run: conda install -c conda-forge oommf
+
     # - name: Pull Docker image
     #   run: docker pull oommf/oommf
 
