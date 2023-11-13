@@ -1,0 +1,5 @@
+micromagneticmodel
+discretisedfield
+oommfc
+numpy
+matplotlib
