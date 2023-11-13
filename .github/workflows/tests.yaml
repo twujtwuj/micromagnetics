@@ -24,8 +24,8 @@ jobs:
         pip install -r tests/test_requirements.txt
         pip install -e .
 
-    - name: Pull Docker image
-      run: docker pull oommf/oommf
+    # - name: Pull Docker image
+    #   run: docker pull oommf/oommf
 
     - name: Run pytest
       run: pytest tests/test_initial_energies.py
