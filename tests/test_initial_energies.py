@@ -64,7 +64,7 @@ uber_system = mm.System(name="system_test_init")
 uber_region = df.Region(p1=(0, 0, 0), p2=(Lx, Ly, Lz))
 uber_mesh = df.Mesh(region=uber_region, n=(Nx, Ny, Nz))
 uber_system.m = df.Field(
-    uber_mesh, dim=3, value=mmc_system.mag, norm=Ms
+    uber_mesh, dim=int(3), value=mmc_system.mag, norm=Ms
 )  # Initialise magnetisations as the same as other system
 uber_system.T = T
 
@@ -161,37 +161,37 @@ def test_exchange_init():
     assert np.isclose(mmc_exchange_E, uber_exchange_E, rtol=rtol_test)
 
 
-# def test_exchange_init():
-#     """
-#     Test UA energy densities and total energy of our system against Ubermag.
-#     """
+def test_exchange_init():
+    """
+    Test UA energy densities and total energy of our system against Ubermag.
+    """
 
-#     print(A)
+    print(A)
 
-#     # Initialisation in simulation
-#     mmc_exchange_x = mmc_system.exchange.exchange_x
-#     mmc_exchange_y = mmc_system.exchange.exchange_y
-#     mmc_exchange_z = mmc_system.exchange.exchange_z
-#     mmc_exchange_w = (
-#         mmc_exchange_x[1:, :, :]
-#         + mmc_exchange_x[:-1, :, :]
-#         + mmc_exchange_y[:, 1:, :]
-#         + mmc_exchange_y[:, :-1, :]
-#         + mmc_exchange_z[:, :, 1:]
-#         + mmc_exchange_z[:, :, :-1]
-#     )
-#     mmc_exchange_E = mmc_exchange_w.sum() * dV
+    # Initialisation in simulation
+    mmc_exchange_x = mmc_system.exchange.exchange_x
+    mmc_exchange_y = mmc_system.exchange.exchange_y
+    mmc_exchange_z = mmc_system.exchange.exchange_z
+    mmc_exchange_w = (
+        mmc_exchange_x[1:, :, :]
+        + mmc_exchange_x[:-1, :, :]
+        + mmc_exchange_y[:, 1:, :]
+        + mmc_exchange_y[:, :-1, :]
+        + mmc_exchange_z[:, :, 1:]
+        + mmc_exchange_z[:, :, :-1]
+    )
+    mmc_exchange_E = mmc_exchange_w.sum() * dV
 
-#     # Initialisation in Ubermag
-#     uber_exchange_w = oc.compute(
-#         uber_system.energy.exchange.density, uber_system
-#     ).array.squeeze()
-#     uber_exchange_E = oc.compute(uber_system.energy.exchange.energy, uber_system)
+    # Initialisation in Ubermag
+    uber_exchange_w = oc.compute(
+        uber_system.energy.exchange.density, uber_system
+    ).array.squeeze()
+    uber_exchange_E = oc.compute(uber_system.energy.exchange.energy, uber_system)
 
-#     print(mmc_exchange_E, uber_exchange_E)
+    print(mmc_exchange_E, uber_exchange_E)
 
-#     assert np.allclose(mmc_exchange_w, uber_exchange_w, rtol=rtol_test)
-#     assert np.isclose(mmc_exchange_E, uber_exchange_E, rtol=rtol_test)
+    assert np.allclose(mmc_exchange_w, uber_exchange_w, rtol=rtol_test)
+    assert np.isclose(mmc_exchange_E, uber_exchange_E, rtol=rtol_test)
 
 
 def test_dmi_init():
