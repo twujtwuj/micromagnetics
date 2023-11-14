@@ -1,6 +1,6 @@
-micromagneticmodel
-discretisedfield
-oommfc
-# ubermag
+# micromagneticmodel
+# discretisedfield
+# oommfc
+ubermag
 numpy
 pytest
