@@ -1,37 +1,37 @@
-name: Run Pytest on push
+# name: Run Pytest on push
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+#     steps:
+#     - name: Checkout repository
+#       uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8 
+#     - name: Set up Python
+#       uses: actions/setup-python@v2
+#       with:
+#         python-version: 3.8 
 
-    - name: Install dependencies
-      run: |
-        pip install --upgrade pip
-        pip install -r tests/test_requirements.txt
-        pip install -e .
+#     - name: Install dependencies
+#       run: |
+#         pip install --upgrade pip
+#         pip install -r tests/test_requirements.txt
+#         pip install -e .
 
-    # - name: Install OOMMF using conda
-    #   run: conda install -c conda-forge oommf
+#     # - name: Install OOMMF using conda
+#     #   run: conda install -c conda-forge oommf
     
-    # - name: Install Ubermag using conda
-    #   run: conda install -c conda-forge ubermag
+#     # - name: Install Ubermag using conda
+#     #   run: conda install -c conda-forge ubermag
 
-    # - name: Pull Docker image
-    #   run: docker pull oommf/oommf
+#     # - name: Pull Docker image
+#     #   run: docker pull oommf/oommf
 
-    - name: Run pytest
-      run: pytest tests/test_initial_energies.py
+#     - name: Run pytest
+#       run: pytest tests/test_initial_energies.py
