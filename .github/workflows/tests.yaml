@@ -27,8 +27,8 @@ jobs:
     # - name: Install OOMMF using conda
     #   run: conda install -c conda-forge oommf
     
-    - name: Install OOMMF using conda
-      run: conda install -c conda-forge ubermag
+    # - name: Install Ubermag using conda
+    #   run: conda install -c conda-forge ubermag
 
     # - name: Pull Docker image
     #   run: docker pull oommf/oommf
