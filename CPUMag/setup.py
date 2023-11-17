@@ -43,37 +43,5 @@ extension = Extension(
     extra_compile_args=["-std=c++11"],
 )
 
-
-# Python package
-"""
-This is a Python package named 'cpusimpy', which wraps around the Cython binding 'simulation_wrapper'.
-The package's purpose is to provide an interface for utilising the parallelised simulation capabilities.
-Please make sure to install the required dependencies specified in the 'install_requires' list.
-
-Requirements for 'cpusimpy':
-- subprocess
-- numpy
-- micromagneticmodel
-- discretisedfield
-- oommfc
-
-"""
-
-setup(
-    name="cpusimpy",
-    version="0.1",
-    packages=find_packages(),
-    install_requires=[
-        "subprocess",
-        "numpy",
-        "micromagneticmodel",
-        "discretisedfield",
-        "oommfc",
-    ],
-    ext_modules=cythonize([extension]),
-)
-
-# Rename the generated .so file and copy it to tests/ and results/
+# Rename the generated .so file
 os.rename("./simulation_wrapper.cpython-310-darwin.so", "./simulation_wrapper.so")
-copyfile("./simulation_wrapper.so", "./tests/simulation_wrapper.so")
-copyfile("./simulation_wrapper.so", "./results/simulation_wrapper.so")
