@@ -10,3 +10,17 @@ Operating with Zeeman, uniaxial anisotropy, exchange, and DMI interactions, this
 - `main.cpp` can be used as main if source code is compiled manually 🎯
 - `setup.py`, `CPU_driver_wrapper.cpp` and `.pyx` are for the creation of Cython extension 📦
 - `utilities.py` contains useful auxiliary functions 🎯
+
+
+## Cython extnesion
+
+To use the CPU driver from Python, the user must build the Cython extension:
+
+```
+python setup.py build_ext --inplace
+pip install -e .
+```
+
+**NOTE:** By default, only `#define TO_FILE` and `#define VERBOSE` conditional directives are in use in the source code, but the user can change this if they wish.
+
+A copy of the shared object `simulation_wrapper.so` is automatically placed into the `tests` and `results` folders.
