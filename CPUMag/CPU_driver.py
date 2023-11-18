@@ -162,7 +162,7 @@ def plot_quiver(file_name):
     mag_z = mag[:, :, :, 2]
 
     # Figure
-    #plt.rcParams["text.usetex"] = True  # LaTeX rendering
+    # plt.rcParams["text.usetex"] = True  # LaTeX rendering
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
     ax.set_box_aspect([Lx, Ly, Lz])  # Aspect ratio
@@ -225,9 +225,9 @@ def plot_quiver(file_name):
         plt.title(f"$m$ at $i = {it}$, $p = {procs}$, $T = {T}$ (atomistic)")
     else:
         plt.title(f"$m$ at $i = {it}$, $p = {procs}$, $T = {T}$ (continuous)")
-    #plt.xlabel(r"$x$")
-    #plt.ylabel(r"$y$")
-    #ax.set_zlabel(r"$z$")
+    # plt.xlabel(r"$x$")
+    # plt.ylabel(r"$y$")
+    # ax.set_zlabel(r"$z$")
     plt.xlabel("x")
     plt.ylabel("y")
     ax.legend()
@@ -262,7 +262,7 @@ def plot_energy_data(file_name):
 
     # sns.set_style("whitegrid", {'grid.linestyle': '--', 'grid.color': '0.8'})
     # colors = sns.color_palette("colorblind", 1)
-    #plt.rcParams["text.usetex"] = True
+    # plt.rcParams["text.usetex"] = True
 
     [
         procs,
