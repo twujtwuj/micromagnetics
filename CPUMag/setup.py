@@ -26,9 +26,9 @@ else:  # Running locally
     include_dirs.append("/opt/homebrew/Cellar/open-mpi/4.1.5/include")
 
 extension = Extension(
-    name="simulation_wrapper",
+    name="CPU_driver_wrapper",
     sources=[
-        "simulation_wrapper.pyx",
+        "CPU_driver_wrapper.pyx",
         "src/Simulation.cpp",
         "src/ContiguousArray4D.cpp",
         "src/Timer.cpp",
@@ -43,5 +43,9 @@ extension = Extension(
     extra_compile_args=["-std=c++11"],
 )
 
+setup(
+    ext_modules=cythonize([extension]),
+)
+
 # Rename the generated .so file
-os.rename("./simulation_wrapper.cpython-310-darwin.so", "./simulation_wrapper.so")
+os.rename("./CPU_driver_wrapper.cpython-310-darwin.so", "./CPU_driver_wrapper.so")

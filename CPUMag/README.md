@@ -11,6 +11,15 @@ Operating with Zeeman, uniaxial anisotropy, exchange, and DMI interactions, this
 - `setup.py`, `CPU_driver_wrapper.cpp` and `.pyx` are for the creation of Cython extension 📦
 - `utilities.py` contains useful auxiliary functions 🎯
 
+## Compiling and running C++ source code and HPC usage
+
+To compile and run the C++ code on `p` processes, from the root directory run:
+
+```
+mpic++ -std=c++11 -Iinclude main.cpp src/*.cpp -o main
+mpiexec -n p main
+```
+
 
 ## Cython extnesion
 

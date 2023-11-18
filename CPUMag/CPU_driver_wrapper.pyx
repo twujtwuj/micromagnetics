@@ -1,4 +1,4 @@
-# simulation_wrapper.pyx
+# CPU_driver_wrapper.pyx
 # cython: language_level=3
 
 """
