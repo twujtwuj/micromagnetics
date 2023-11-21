@@ -3,8 +3,6 @@ import discretisedfield as df
 import oommfc as oc
 import numpy as np
 
-# MMC driver package imports
-#import MMCMag.MMC_driver as mmc
 
 # Use Docker image
 # If Ubermag cannot be installed fully, install mm, df, and oc and use this Docker image:
@@ -68,7 +66,7 @@ uber_system = mm.System(name="system_test_init")
 uber_region = df.Region(p1=(0, 0, 0), p2=(Lx, Ly, Lz))
 uber_mesh = df.Mesh(region=uber_region, n=(Nx, Ny, Nz))
 uber_system.m = df.Field(
-    uber_mesh, 3, value=mmc_system.mag, norm=Ms
+    uber_mesh, 3, value=1, norm=Ms
 )  # Initialise magnetisations as the same as other system
 uber_system.T = T
 
