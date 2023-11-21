@@ -16,4 +16,3 @@ dependencies:
     - git+https://github.com/ubermag/oommfc.git
     - git+https://github.com/ubermag/mag2exp.git
     - pytest
-    #- .
