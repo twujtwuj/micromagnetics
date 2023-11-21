@@ -46,7 +46,7 @@ jobs:
 
     - name: Run pytest
       run: |
-        conda activate conda-environment
+        source activate conda-environment
         pytest tests/test_initial_energies.py
 
 # name: unit_tests
