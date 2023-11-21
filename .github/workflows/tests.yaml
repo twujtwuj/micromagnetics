@@ -52,7 +52,7 @@ jobs:
     #     pytest tests/test_initial_energies.py
 
     - name: Run pytest
-      run: conda run -n conda-environment pytest tests/test_initial_energies.py
+      run: conda run -n conda-environment pytest tests/test_test.py
 
 # name: unit_tests
 
