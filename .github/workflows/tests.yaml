@@ -22,7 +22,7 @@ jobs:
         environment-file: .github/environment.yml
     
     - name: Update conda environment
-        run: conda update --all
+      run: conda update --all
 
     # - name: Set up Python
     #   uses: actions/setup-python@v2
