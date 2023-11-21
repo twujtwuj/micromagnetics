@@ -15,7 +15,3 @@ dependencies:
     - git+https://github.com/ubermag/micromagnetictests.git
     - git+https://github.com/ubermag/oommfc.git
     - git+https://github.com/ubermag/mag2exp.git
-    - pytest
-
-post-link:
-  - pip install .
