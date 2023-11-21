@@ -44,12 +44,15 @@ jobs:
     # - name: Pull Docker image
     #   run: docker pull oommf/oommf
 
+    # - name: Run pytest
+    #   run: |
+    #     conda info --envs
+    #     conda activate base
+    #     conda activate conda-environment
+    #     pytest tests/test_initial_energies.py
+
     - name: Run pytest
-      run: |
-        conda info --envs
-        conda activate base
-        conda activate conda-environment
-        pytest tests/test_initial_energies.py
+      run: conda run -n conda-environment pytest tests/test_initial_energies.py
 
 # name: unit_tests
 
