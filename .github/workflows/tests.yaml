@@ -45,8 +45,9 @@ jobs:
     #   run: docker pull oommf/oommf
 
     - name: Run pytest
-      run: conda activate conda-environment
-      run: pytest tests/test_initial_energies.py
+      run: |
+        conda activate conda-environment
+        pytest tests/test_initial_energies.py
 
 # name: unit_tests
 
