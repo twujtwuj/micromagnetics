@@ -51,6 +51,9 @@ jobs:
     #     conda activate conda-environment
     #     pytest tests/test_initial_energies.py
 
+    - name: Install MMC package
+      run: conda run -n conda-environment pip install .
+
     - name: Run pytest
       run: conda run -n conda-environment pytest tests/test_test.py
 
