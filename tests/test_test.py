@@ -3,6 +3,8 @@ import discretisedfield as df
 import oommfc as oc
 import numpy as np
 
+import MMCMag.MMC_driver as mmc
+
 
 # Use Docker image
 # If Ubermag cannot be installed fully, install mm, df, and oc and use this Docker image:
