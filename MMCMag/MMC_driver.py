@@ -390,11 +390,15 @@ class Simulation:
         # Extract parameters
         T = self.system.T
         Ms = self.system.Ms
-        H = self.system.zeeman.H
-        u = self.system.ua.u
-        K = self.system.ua.K
-        A = self.system.exchange.A
-        D = self.system.dmi.D
+        if self.system.is_zeeman:
+            H = self.system.zeeman.H
+        if self.system.is_ua:
+            u = self.system.ua.u
+            K = self.system.ua.K
+        if self.system.is_exchange:
+            A = self.system.exchange.A
+        if self.system.is_dmi:
+            D = self.system.dmi.D
         mag = self.system.mag
         Nx, Ny, Nz = self.system.mesh.N
         Lx, Ly, Lz = self.system.mesh.L
@@ -402,16 +406,18 @@ class Simulation:
 
         # Initialise total energies
         total_E = 0
-        total_E += self.system.zeeman.zeeman.sum()  # add all Zeeman energies
-        total_E += self.system.ua.ua.sum()  # add all anisotropy energies
-        total_E += (
-            2 * self.system.exchange.exchange_x.sum()
-        )  # add all exchange energies
-        total_E += 2 * self.system.exchange.exchange_y.sum()
-        total_E += 2 * self.system.exchange.exchange_z.sum()
-        total_E += 2 * self.system.dmi.dmi_x.sum()  # add all dmi energies
-        total_E += 2 * self.system.dmi.dmi_y.sum()
-        total_E += 2 * self.system.dmi.dmi_z.sum()
+        if self.system.is_zeeman:
+            total_E += self.system.zeeman.zeeman.sum()  # add all Zeeman energies
+        if self.system.is_ua:
+            total_E += self.system.ua.ua.sum()  # add all anisotropy energies
+        if self.system.is_exchange:
+            total_E += 2 * self.system.exchange.exchange_x.sum()
+            total_E += 2 * self.system.exchange.exchange_y.sum()
+            total_E += 2 * self.system.exchange.exchange_z.sum()
+        if self.system.is_dmi:
+            total_E += 2 * self.system.dmi.dmi_x.sum()
+            total_E += 2 * self.system.dmi.dmi_y.sum()
+            total_E += 2 * self.system.dmi.dmi_z.sum()
 
         # Main simulation loop
         while self.it < it_fin:
@@ -422,38 +428,49 @@ class Simulation:
             mag_x, mag_y, mag_z = self.system.mag[x, y, z]
 
             # Find cell-vicinity energy
-            zeeman_E = self.system.zeeman.zeeman[x, y, z]  # add all Zeeman energies
-            ua_E = self.system.ua.ua[x, y, z]  # add all anisotropy energies
-            exchange_right_E = self.system.exchange.exchange_x[x + 1, y, z]
-            exchange_left_E = self.system.exchange.exchange_x[x, y, z]
-            exchange_up_E = self.system.exchange.exchange_y[x, y + 1, z]
-            exchange_down_E = self.system.exchange.exchange_y[x, y, z]
-            exchange_front_E = self.system.exchange.exchange_z[x, y, z + 1]
-            exchange_back_E = self.system.exchange.exchange_z[x, y, z]
-            dmi_right_E = self.system.dmi.dmi_x[x + 1, y, z]
-            dmi_left_E = self.system.dmi.dmi_x[x, y, z]
-            dmi_up_E = self.system.dmi.dmi_y[x, y + 1, z]
-            dmi_down_E = self.system.dmi.dmi_y[x, y, z]
-            dmi_front_E = self.system.dmi.dmi_z[x, y, z + 1]
-            dmi_back_E = self.system.dmi.dmi_z[x, y, z]
+            if self.system.is_zeeman:
+                zeeman_E = self.system.zeeman.zeeman[x, y, z]  # add all Zeeman energies
+            if self.system.is_ua:
+                ua_E = self.system.ua.ua[x, y, z]  # add all anisotropy energies
+            if self.system.is_exchange:
+                exchange_right_E = self.system.exchange.exchange_x[x + 1, y, z]
+                exchange_left_E = self.system.exchange.exchange_x[x, y, z]
+                exchange_up_E = self.system.exchange.exchange_y[x, y + 1, z]
+                exchange_down_E = self.system.exchange.exchange_y[x, y, z]
+                exchange_front_E = self.system.exchange.exchange_z[x, y, z + 1]
+                exchange_back_E = self.system.exchange.exchange_z[x, y, z]
+            if self.system.is_dmi:
+                dmi_right_E = self.system.dmi.dmi_x[x + 1, y, z]
+                dmi_left_E = self.system.dmi.dmi_x[x, y, z]
+                dmi_up_E = self.system.dmi.dmi_y[x, y + 1, z]
+                dmi_down_E = self.system.dmi.dmi_y[x, y, z]
+                dmi_front_E = self.system.dmi.dmi_z[x, y, z + 1]
+                dmi_back_E = self.system.dmi.dmi_z[x, y, z]
 
-            local_E = (
-                zeeman_E
-                + ua_E
-                + 2 * exchange_right_E
-                + 2  # Multiply by two since this energy is the same for the neighbouring atom
-                * exchange_left_E
-                + 2 * exchange_up_E
-                + 2 * exchange_down_E
-                + 2 * exchange_front_E
-                + 2 * exchange_back_E
-                + 2 * dmi_right_E
-                + 2 * dmi_left_E
-                + 2 * dmi_up_E
-                + 2 * dmi_down_E
-                + 2 * dmi_front_E
-                + 2 * dmi_back_E
-            )
+            local_E = 0
+            if self.system.is_zeeman:
+                local_E += zeeman_E
+            if self.system.is_ua:
+                local_E += ua_E
+            # Multiply by two since this energy is the same for the neighboring atom
+            if self.system.is_exchange:
+                local_E += 2 * (
+                    exchange_right_E
+                    + exchange_left_E
+                    + exchange_up_E
+                    + exchange_down_E
+                    + exchange_front_E
+                    + exchange_back_E
+                )
+            if self.system.is_dmi:
+                local_E += 2 * (
+                    dmi_right_E
+                    + dmi_left_E
+                    + dmi_up_E
+                    + dmi_down_E
+                    + dmi_front_E
+                    + dmi_back_E
+                )
 
             # Find spherical coodinates of atom
             r = np.sqrt(mag_x**2 + mag_y**2 + mag_z**2)
@@ -473,104 +490,137 @@ class Simulation:
             proposal = np.array([proposal_mag_x, proposal_mag_y, proposal_mag_z]).T
 
             # Calculate proposal energy
-            proposed_zeeman_E = -mu0 * np.sum(H * proposal, axis=-1)  # Zeeman
-            proposed_ua_E = -K * np.sum(u * proposal, axis=-1) ** 2  # anisotropy
-            if K > 0:
-                proposed_ua_E = K + proposed_ua_E  # anisotropy
-            proposed_exchange_right_E = (
-                -A * np.sum(proposal * mag[x + 1, y, z], axis=-1) if x + 1 < Nx else 0
-            )  # right
-            proposed_exchange_left_E = (
-                -A * np.sum(proposal * mag[x - 1, y, z], axis=-1) if x > 0 else 0
-            )  # left
-            proposed_exchange_up_E = (
-                -A * np.sum(proposal * mag[x, y + 1, z], axis=-1) if y + 1 < Ny else 0
-            )  # up
-            proposed_exchange_down_E = (
-                -A * np.sum(proposal * mag[x, y - 1, z], axis=-1) if y > 0 else 0
-            )  # down
-            proposed_exchange_front_E = (
-                -A * np.sum(proposal * mag[x, y, z + 1], axis=-1) if z + 1 < Nz else 0
-            )  # front
-            proposed_exchange_back_E = (
-                -A * np.sum(proposal * mag[x, y, z - 1], axis=-1) if z > 0 else 0
-            )  # back
-            proposed_dmi_right_E = -np.sum(
-                D * np.array([1, 0, 0]) * np.cross(proposal, mag[x + 1, y, z], axis=-1)
-                if x + 1 < Nx
-                else 0
-            )  # right
-            proposed_dmi_left_E = -np.sum(
-                D * np.array([-1, 0, 0]) * np.cross(proposal, mag[x - 1, y, z], axis=-1)
-                if x > 0
-                else 0
-            )  # left
-            proposed_dmi_up_E = -np.sum(
-                D * np.array([0, 1, 0]) * np.cross(proposal, mag[x, y + 1, z], axis=-1)
-                if y + 1 < Ny
-                else 0
-            )  # up
-            proposed_dmi_down_E = -np.sum(
-                D * np.array([0, -1, 0]) * np.cross(proposal, mag[x, y - 1, z], axis=-1)
-                if y > 0
-                else 0
-            )  # down
-            proposed_dmi_front_E = -np.sum(
-                D * np.array([0, 0, 1]) * np.cross(proposal, mag[x, y, z + 1], axis=-1)
-                if z + 1 < Nz
-                else 0
-            )  # front
-            proposed_dmi_back_E = -np.sum(
-                D * np.array([0, 0, -1]) * np.cross(proposal, mag[x, y, z - 1], axis=-1)
-                if z > 0
-                else 0
-            )  # back
-            if not self.system.is_atomistic:  # Rescaling if continuous interpretation
-                proposed_zeeman_E = proposed_zeeman_E * Ms
-                proposed_ua_E = proposed_ua_E  # No change
-                proposed_exchange_right_E = (  # Rescale and add reference level to non-edge cells
-                    (proposed_exchange_right_E + A) / (dx**2) if x + 1 < Nx else 0
+            if self.system.is_zeeman:
+                proposed_zeeman_E = -mu0 * np.sum(H * proposal, axis=-1)  # Zeeman
+                if (
+                    not self.system.is_atomistic
+                ):  # Rescaling if continuous interpretation
+                    proposed_zeeman_E = proposed_zeeman_E * Ms
+            if self.system.is_ua:
+                proposed_ua_E = -K * np.sum(u * proposal, axis=-1) ** 2  # anisotropy
+                if K > 0:
+                    proposed_ua_E = K + proposed_ua_E  # anisotropy
+            if self.system.is_exchange:
+                proposed_exchange_right_E = (
+                    -A * np.sum(proposal * mag[x + 1, y, z], axis=-1)
+                    if x + 1 < Nx
+                    else 0
                 )  # right
                 proposed_exchange_left_E = (
-                    (proposed_exchange_left_E + A) / (dx**2) if x > 0 else 0
+                    -A * np.sum(proposal * mag[x - 1, y, z], axis=-1) if x > 0 else 0
                 )  # left
                 proposed_exchange_up_E = (
-                    (proposed_exchange_up_E + A) / (dy**2) if y + 1 < Ny else 0
+                    -A * np.sum(proposal * mag[x, y + 1, z], axis=-1)
+                    if y + 1 < Ny
+                    else 0
                 )  # up
                 proposed_exchange_down_E = (
-                    (proposed_exchange_down_E + A) / (dy**2) if y > 0 else 0
+                    -A * np.sum(proposal * mag[x, y - 1, z], axis=-1) if y > 0 else 0
                 )  # down
                 proposed_exchange_front_E = (
-                    (proposed_exchange_front_E + A) / (dz**2) if z + 1 < Nz else 0
+                    -A * np.sum(proposal * mag[x, y, z + 1], axis=-1)
+                    if z + 1 < Nz
+                    else 0
                 )  # front
                 proposed_exchange_back_E = (
-                    (proposed_exchange_back_E + A) / (dz**2) if z > 0 else 0
+                    -A * np.sum(proposal * mag[x, y, z - 1], axis=-1) if z > 0 else 0
                 )  # back
-                proposed_dmi_right_E = proposed_dmi_right_E / (2 * dx)
-                proposed_dmi_left_E = proposed_dmi_left_E / (2 * dx)
-                proposed_dmi_up_E = proposed_dmi_up_E / (2 * dy)
-                proposed_dmi_down_E = proposed_dmi_down_E / (2 * dy)
-                proposed_dmi_front_E = proposed_dmi_front_E / (2 * dz)
-                proposed_dmi_back_E = proposed_dmi_back_E / (2 * dz)
+                if not self.system.is_atomistic:
+                    proposed_exchange_right_E = (  # Rescale and add reference level to non-edge cells
+                        (proposed_exchange_right_E + A) / (dx**2) if x + 1 < Nx else 0
+                    )  # right
+                    proposed_exchange_left_E = (
+                        (proposed_exchange_left_E + A) / (dx**2) if x > 0 else 0
+                    )  # left
+                    proposed_exchange_up_E = (
+                        (proposed_exchange_up_E + A) / (dy**2) if y + 1 < Ny else 0
+                    )  # up
+                    proposed_exchange_down_E = (
+                        (proposed_exchange_down_E + A) / (dy**2) if y > 0 else 0
+                    )  # down
+                    proposed_exchange_front_E = (
+                        (proposed_exchange_front_E + A) / (dz**2) if z + 1 < Nz else 0
+                    )  # front
+                    proposed_exchange_back_E = (
+                        (proposed_exchange_back_E + A) / (dz**2) if z > 0 else 0
+                    )  # back
+            if self.system.is_dmi:
+                proposed_dmi_right_E = -np.sum(
+                    D
+                    * np.array([1, 0, 0])
+                    * np.cross(proposal, mag[x + 1, y, z], axis=-1)
+                    if x + 1 < Nx
+                    else 0
+                )  # right
+                proposed_dmi_left_E = -np.sum(
+                    D
+                    * np.array([-1, 0, 0])
+                    * np.cross(proposal, mag[x - 1, y, z], axis=-1)
+                    if x > 0
+                    else 0
+                )  # left
+                proposed_dmi_up_E = -np.sum(
+                    D
+                    * np.array([0, 1, 0])
+                    * np.cross(proposal, mag[x, y + 1, z], axis=-1)
+                    if y + 1 < Ny
+                    else 0
+                )  # up
+                proposed_dmi_down_E = -np.sum(
+                    D
+                    * np.array([0, -1, 0])
+                    * np.cross(proposal, mag[x, y - 1, z], axis=-1)
+                    if y > 0
+                    else 0
+                )  # down
+                proposed_dmi_front_E = -np.sum(
+                    D
+                    * np.array([0, 0, 1])
+                    * np.cross(proposal, mag[x, y, z + 1], axis=-1)
+                    if z + 1 < Nz
+                    else 0
+                )  # front
+                proposed_dmi_back_E = -np.sum(
+                    D
+                    * np.array([0, 0, -1])
+                    * np.cross(proposal, mag[x, y, z - 1], axis=-1)
+                    if z > 0
+                    else 0
+                )  # back
+                # Rescaling if continuous interpretation
+                if not self.system.is_atomistic:
+                    proposed_dmi_right_E = proposed_dmi_right_E / (2 * dx)
+                    proposed_dmi_left_E = proposed_dmi_left_E / (2 * dx)
+                    proposed_dmi_up_E = proposed_dmi_up_E / (2 * dy)
+                    proposed_dmi_down_E = proposed_dmi_down_E / (2 * dy)
+                    proposed_dmi_front_E = proposed_dmi_front_E / (2 * dz)
+                    proposed_dmi_back_E = proposed_dmi_back_E / (2 * dz)
 
-            # Find local energy change
-            proposed_local_E = (
-                proposed_zeeman_E
-                + proposed_ua_E
-                + 2 * proposed_exchange_right_E
-                + 2  # Multiply by two since this energy is the same for the neighbouring atom
-                * proposed_exchange_left_E
-                + 2 * proposed_exchange_up_E
-                + 2 * proposed_exchange_down_E
-                + 2 * proposed_exchange_front_E
-                + 2 * proposed_exchange_back_E
-                + 2 * proposed_dmi_right_E
-                + 2 * proposed_dmi_left_E
-                + 2 * proposed_dmi_up_E
-                + 2 * proposed_dmi_down_E
-                + 2 * proposed_dmi_front_E
-                + 2 * proposed_dmi_back_E
-            )
+            # Find proposed local energy change
+            proposed_local_E = 0
+            if self.system.is_zeeman:
+                proposed_local_E += proposed_zeeman_E
+            if self.system.is_ua:
+                proposed_local_E += proposed_ua_E
+            # Multiply by two since this energy is the same for the neighboring atom
+            if self.system.is_exchange:
+                proposed_local_E += 2 * (
+                    proposed_exchange_right_E
+                    + proposed_exchange_left_E
+                    + proposed_exchange_up_E
+                    + proposed_exchange_down_E
+                    + proposed_exchange_front_E
+                    + proposed_exchange_back_E
+                )
+            if self.system.is_dmi:
+                proposed_local_E += 2 * (
+                    proposed_dmi_right_E
+                    + proposed_dmi_left_E
+                    + proposed_dmi_up_E
+                    + proposed_dmi_down_E
+                    + proposed_dmi_front_E
+                    + proposed_dmi_back_E
+                )
 
             # Calculate delta_E and compare
             delta_E = proposed_local_E - local_E
@@ -579,20 +629,30 @@ class Simulation:
                 T != 0 and (delta_E < 0.0 or r < np.exp(-delta_E / (kB * T)))
             ):  # accept proposal
                 self.system.mag[x, y, z] = proposal  # update mu
-                self.system.zeeman.zeeman[x, y, z] = proposed_zeeman_E
-                self.system.ua.ua[x, y, z] = proposed_ua_E
-                self.system.exchange.exchange_x[x + 1, y, z] = proposed_exchange_right_E
-                self.system.exchange.exchange_x[x, y, z] = proposed_exchange_left_E
-                self.system.exchange.exchange_y[x, y + 1, z] = proposed_exchange_up_E
-                self.system.exchange.exchange_y[x, y, z] = proposed_exchange_down_E
-                self.system.exchange.exchange_z[x, y, z + 1] = proposed_exchange_front_E
-                self.system.exchange.exchange_z[x, y, z] = proposed_exchange_back_E
-                self.system.dmi.dmi_x[x + 1, y, z] = proposed_dmi_right_E
-                self.system.dmi.dmi_x[x, y, z] = proposed_dmi_left_E
-                self.system.dmi.dmi_y[x, y + 1, z] = proposed_dmi_up_E
-                self.system.dmi.dmi_y[x, y, z] = proposed_dmi_down_E
-                self.system.dmi.dmi_z[x, y, z + 1] = proposed_dmi_front_E
-                self.system.dmi.dmi_z[x, y, z] = proposed_dmi_back_E
+                if self.system.is_zeeman:
+                    self.system.zeeman.zeeman[x, y, z] = proposed_zeeman_E
+                if self.system.is_ua:
+                    self.system.ua.ua[x, y, z] = proposed_ua_E
+                if self.system.is_exchange:
+                    self.system.exchange.exchange_x[
+                        x + 1, y, z
+                    ] = proposed_exchange_right_E
+                    self.system.exchange.exchange_x[x, y, z] = proposed_exchange_left_E
+                    self.system.exchange.exchange_y[
+                        x, y + 1, z
+                    ] = proposed_exchange_up_E
+                    self.system.exchange.exchange_y[x, y, z] = proposed_exchange_down_E
+                    self.system.exchange.exchange_z[
+                        x, y, z + 1
+                    ] = proposed_exchange_front_E
+                    self.system.exchange.exchange_z[x, y, z] = proposed_exchange_back_E
+                if self.system.is_dmi:
+                    self.system.dmi.dmi_x[x + 1, y, z] = proposed_dmi_right_E
+                    self.system.dmi.dmi_x[x, y, z] = proposed_dmi_left_E
+                    self.system.dmi.dmi_y[x, y + 1, z] = proposed_dmi_up_E
+                    self.system.dmi.dmi_y[x, y, z] = proposed_dmi_down_E
+                    self.system.dmi.dmi_z[x, y, z + 1] = proposed_dmi_front_E
+                    self.system.dmi.dmi_z[x, y, z] = proposed_dmi_back_E
                 total_E += delta_E  # update total energy
 
             # Track energy changes
@@ -612,18 +672,36 @@ class Simulation:
         self.run_time += end - start
 
     def plot_energy_tracker(self):
+        if not self.system.is_atomistic:
+            dx, dy, dz = self.system.mesh.d
+            dV = dx * dy * dz
+            energies = np.array(self.total_E_tracker) * dV
+        else:
+            energies = np.array(self.total_E_tracker)
         if self.it > 1000:
             plt.plot(
                 np.arange(1, self.it, self.it // 100),
-                self.total_E_tracker[:: self.it // 100],
+                energies[:: self.it // 100],
             )
         else:
-            plt.plot(self.total_E_tracker)
+            plt.plot(energies)
         plt.title(f"Total energy of system at $i={self.it}$")
         plt.xlabel("Iteration $i$")
         plt.ylabel("Total enery $E$")
 
         plt.show()
+
+
+def random_unitvec():
+    """
+    Generates a vector randomly and uniformly on the unit sphere.
+    """
+    theta = np.pi * np.random.rand()
+    phi = 2 * np.pi * np.random.rand()
+    vec = np.array(
+        [np.sin(theta) * np.cos(phi), np.sin(theta) * np.sin(phi), np.cos(theta)]
+    )  # convert to cartesian
+    return vec
 
 
 # if __name__ == "__main__":

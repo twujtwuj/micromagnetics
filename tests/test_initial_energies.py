@@ -5,6 +5,7 @@ import numpy as np
 
 # MMC driver package imports
 import MMCMag.MMC_driver as mmc
+from MMCMag.MMC_driver import random_unitvec
 
 # Use Docker image
 # If Ubermag cannot be installed fully, install mm, df, and oc and use this Docker image:
@@ -18,18 +19,6 @@ These tests verify that the initial energy densities and total energies for each
 Tests are run on a small (5, 5, 5) system with random magnetic parameters of realistic orders of magnitude.
 
 """
-
-
-def random_unitvec():
-    """
-    Generates a vector randomly and uniformly on the unit sphere.
-    """
-    theta = np.pi * np.random.rand()
-    phi = 2 * np.pi * np.random.rand()
-    vec = np.array(
-        [np.sin(theta) * np.cos(phi), np.sin(theta) * np.sin(phi), np.cos(theta)]
-    )  # convert to cartesian
-    return vec
 
 
 Lx, Ly, Lz = 50e-9, 50e-9, 50e-9
