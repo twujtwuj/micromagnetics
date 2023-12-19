@@ -25,4 +25,4 @@ jobs:
       run: conda run -n conda-environment pip install .
 
     - name: Run pytest
-      run: conda run -n conda-environment pytest tests/test_initial_energies.py
+      run: conda run -n conda-environment pytest tests/test_initial_energies.py tests/test_driver_zeeman.py
